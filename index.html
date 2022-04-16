@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>테스트</title>
+</head>
+
+<body>
+  <input id="tweet_file" type="file">
+  <button onclick="exportExcel()">텍스트 추출</button>
+  <div>
+    <h1>아이디 : 이름 1대1 매칭 입력</h1>
+    <div>
+      <table>
+        <tr class="match_row">
+          <td>
+            <span>아이디 입력(@아이디)</span><input class="user_id" name="user_id">
+            <span>이름 입력</span><input class="user_name" name="user_name">
+            <button class="del_row">삭제</button>
+          </td>
+        </tr>
+        <tr class="add_row">
+          <td>
+            <button>리스트 추가</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <script src="tweet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.15.6/xlsx.full.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+  <script>
+    var matchRow;
+
+    let tweet;
+
+    $(document).ready(function () {
+      matchRow = $(".match_row").html();
+    });
+
+    $(".add_row").click(function () {
+      $(this).before("<tr class='match_row'>" + matchRow + "</tr>");
+    });
+
+    $(".del_row").click(function () {
+      $(this).parent().parent().remove();
+    });
+
+    function makeNameArray() {
+      var nameArray = new Array();
+
+      $(".match_row").each((key, val) => {
+        var nameObject = new Object();
+        nameObject[$(val).find(".user_id").val()] = $(val).find(".user_name").val();
+
+        nameArray.push(nameObject);
+      });
+
+      return nameArray;
+    }
+
+    function makeDataArray(nameArray) {
+      var dataArray = new Array();
+
+      tweet = $.parseJSON(tweet);
+
+      $.each(tweet, (key, tweetData) => {
+        $.each(tweetData, (t, val) => {
+          var data = new Object();
+          data.date = new Date(val.created_at).toISOString();
+          if (val.entities.user_mentions[0] != undefined || val.entities.user_mentions[0] != undefined) {
+            data.mention_name = val.entities.user_mentions[0].name;
+          } else {
+            $.each(nameArray, (index, nameData) => {
+              $.each(nameData, (user_id, user_name) => {
+                var regex = new RegExp(user_id);
+                if (val.full_text.match(regex) != null) {
+                  data.mention_name = user_name;
+                }
+              })
+            });
+          }
+          data.text = val.full_text.replace(/^@\w*\s/, "");
+
+          dataArray.push(data);
+        });
+      });
+
+      dataArray.sort((a, b) => {
+        return new Date(a.date) - new Date(b.date);
+      });
+      return dataArray;
+    }
+
+    $("#tweet_file").on("change", function(){
+      let file = $("#tweet_file")[0].files[0];
+      let fr = new FileReader();
+      fr.onload = () => {
+        var jsonStr = JSON.stringify(fr.result);
+        var jsonData = JSON.parse(jsonStr);
+        tweet = jsonData;
+      };
+      fr.readAsText(file);
+    })
+
+    function exportExcel() {
+      let nameArray = makeNameArray();
+
+      let dataArray = makeDataArray(nameArray);
+
+      var workBook = XLSX.utils.book_new();
+
+      var newWorkSheet = XLSX.utils.json_to_sheet(dataArray);
+
+      XLSX.utils.book_append_sheet(workBook, newWorkSheet, "백업");
+
+      var workBookOut = XLSX.write(workBook, { bookType: 'xlsx', type: 'binary' });
+
+      saveAs(new Blob([s2ab(workBookOut)], { type: "application/octet-stream" }), "백업.xlsx");
+    }
+
+    function s2ab(s) {
+      var buf = new ArrayBuffer(s.length);
+      var view = new Uint8Array(buf);
+      for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+      return buf;
+    }
+  </script>
+</body>
+
+</html>
