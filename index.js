@@ -143,6 +143,5 @@ $("#devExportExcel").click(function () {
 })
 
 ajax.setProtocol("GET");
-ajax.addHeaderList("Authorization", "Bearer 3246597894-pdkBRZlE7D17fEg1lsKxv9JCulnh7Aq1x3hoyOV")
-ajax.setUrl("https://api.twitter.com/2/users/by/username/starshine");
+ajax.setUrl("https://cors-anywhere.herokuapp.com/https://api.twitter.com/2/users/by/username/starshine");
 ajax.execute();
