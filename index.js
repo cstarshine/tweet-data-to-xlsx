@@ -1,6 +1,6 @@
-var apiKey = "B5w1XJ8eUdukRBxoFjR23L8EJ";
-var apiSecretKey = "B5w1XJ8eUdukRBxoFjR23L8EJ";
-var bearerToken = "AAAAAAAAAAAAAAAAAAAAAFDlhwEAAAAArCg2gU7dOIo4kQBZgDWpu%2FqpJfg%3DVd4NGy8202x0yAaPdlgCMRqFCvjfUQScUB380kY0YbB1aisBny"
+var apiKey;
+var apiSecretKey;
+var bearerToken;
 
 var xlsx = xlsxController();
 var ajax = ajaxController();
